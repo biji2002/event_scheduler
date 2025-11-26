@@ -1,0 +1,95 @@
+.add-event-container {
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+.add-event-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-textarea,
+.form-date,
+.form-time {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.form-textarea {
+  height: 100px;
+  resize: none;
+}
+
+.add-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0066ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.add-btn:hover {
+  background: #004acc;
+}
+
+.error-box {
+  padding: 10px;
+  background: #ffe6e6;
+  border-left: 4px solid red;
+  margin-bottom: 15px;
+  color: #990000;
+  font-weight: bold;
+}
+
+.event-card {
+  padding: 15px;
+  border-radius: 10px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.event-card h3 {
+  margin: 0 0 6px;
+}
+
+.event-actions button {
+  padding: 6px 12px;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #ffaa00;
+  border: none;
+}
+
+.btn-delete {
+  background: #ff4444;
+  border: none;
+  color: white;
+}

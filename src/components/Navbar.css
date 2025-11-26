@@ -1,0 +1,31 @@
+.nav {
+  width: 100%;
+  padding: 20px 120px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-title {
+  font-size: 28px;
+  color: white;
+  font-weight: 600;
+}
+
+.nav-btn {
+  background: #7c3aed;
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}

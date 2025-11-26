@@ -1,0 +1,105 @@
+/* Page container */
+.event-container {
+  padding: 30px;
+  max-width: 1100px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+}
+
+.event-title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 25px;
+  color: #1a1a1a;
+}
+
+/* Error message */
+.event-error {
+  color: red;
+  background: #ffe6e6;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* No events */
+.no-events {
+  text-align: center;
+  color: #777;
+  font-size: 18px;
+}
+
+/* Grid layout */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Card style */
+.event-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: 0px 4px 14px rgba(0,0,0,0.1);
+  transition: 0.2s ease-in-out;
+  border: 1px solid #e4e4e4;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0px 6px 18px rgba(0,0,0,0.15);
+}
+
+.event-card-title {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+.event-desc {
+  color: #555;
+  margin-bottom: 12px;
+}
+
+/* Info section */
+.event-info p {
+  margin: 6px 0;
+  color: #333;
+}
+
+/* Footer */
+.event-footer {
+  margin-top: 12px;
+}
+
+.event-badge {
+  background: #007bff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* Loader */
+.event-loading {
+  text-align: center;
+  padding: 40px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ccc;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  margin: auto;
+  margin-bottom: 10px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

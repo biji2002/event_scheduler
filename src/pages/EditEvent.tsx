@@ -4,15 +4,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
 
-function timeToInput(mins: number) {
-  const hh = Math.floor(mins / 60).toString().padStart(2, "0");
-  const mm = (mins % 60).toString().padStart(2, "0");
-  return `${hh}:${mm}`;
-}
-
-function inputToMinutes(time: string) {
-  const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
+function toTimeInput(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toTimeString().slice(0,5); // "HH:MM"
 }
 
 export default function EditEvent() {
@@ -35,9 +30,9 @@ export default function EditEvent() {
         if (!ev) return alert("Event not found");
         setTitle(ev.title);
         setDescription(ev.description || "");
-        setDate(ev.date.slice(0, 10));
-        setStartTime(timeToInput(ev.startMinute));
-        setEndTime(timeToInput(ev.endMinute));
+        setDate(ev.date.slice(0,10));
+        setStartTime(toTimeInput(ev.startTime));
+        setEndTime(toTimeInput(ev.endTime));
       } catch (err) {
         console.error(err);
         alert("Failed to load event");
@@ -51,13 +46,17 @@ export default function EditEvent() {
     if (!user || user.role !== "ADMIN") return alert("Only admin can edit");
     setLoading(true);
     try {
+      const startISO = new Date(`${date}T${startTime}:00`).toISOString();
+      const endISO = new Date(`${date}T${endTime}:00`).toISOString();
+
       await api.put(`/events/${id}`, {
         title,
         description,
         date,
-        startMinute: inputToMinutes(startTime),
-        endMinute: inputToMinutes(endTime),
+        startTime: startISO,
+        endTime: endISO,
       });
+
       navigate("/add-event");
     } catch (err) {
       console.error(err);

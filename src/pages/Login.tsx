@@ -1,41 +1,94 @@
 // frontend/src/pages/Login.tsx
-import { useState } from "react";
+import React, { useState } from "react";
+import "./Login.css";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "USER">("USER");
+  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     try {
       const res = await api.post("/auth/login", { email, password, role });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
       login(res.data.token, res.data.user);
-      if (res.data.user.role === "ADMIN") navigate("/add-event");
-      else navigate("/events");
+
+      // ROLE BASED REDIRECT
+      if (res.data.user.role === "ADMIN") {
+        navigate("/add-event");
+      } else {
+        navigate("/events");
+      }
     } catch (err: any) {
-      alert(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div style={{ width: 300, margin: "auto", marginTop: 50 }}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} /><br /><br />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} /><br /><br />
-        <select value={role} onChange={(e) => setRole(e.target.value as any)}>
-          <option value="ADMIN">Admin</option>
-          <option value="USER">User</option>
-        </select><br /><br />
-        <button type="submit">Login</button>
-      </form>
-      <p style={{ marginTop: 20 }}>New user? <a href="/register">Register here</a></p>
+    <div className="login-page">
+      <div className="login-card">
+        <h2 className="login-title">Welcome Back</h2>
+        <p className="login-sub">Login to access the event dashboard</p>
+
+        <form onSubmit={handleLogin}>
+          <div className="input-box">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-box">
+            <label>Role</label>
+            <select
+              value={role}
+              onChange={(e) =>
+                setRole(e.target.value as "USER" | "ADMIN")
+              }
+            >
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          <button className="login-btn" type="submit">
+            Login
+          </button>
+        </form>
+
+        <p className="signup-text">
+          Don't have an account?{" "}
+          <span onClick={() => navigate("/register")}>Register</span>
+        </p>
+      </div>
     </div>
   );
 }

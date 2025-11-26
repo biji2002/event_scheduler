@@ -1,28 +1,22 @@
-import { useState, useEffect, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import api from "../api/axiosClient";
 import { AuthContext } from "../context/AuthContext";
+import "./AddEvent.css";
 
 export default function AddEvent() {
   const { user } = useContext(AuthContext);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [errors, setErrors] = useState("");
 
-  
-  const timeToMinutes = (time: string) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 60 + m;
-  };
-
-
-  const minutesToTime = (mins: number) => {
-    const h = Math.floor(mins / 60).toString().padStart(2, "0");
-    const m = (mins % 60).toString().padStart(2, "0");
-    return `${h}:${m}`;
+  const combineDateTime = (dateStr: string, timeStr: string) => {
+    return new Date(`${dateStr}T${timeStr}:00`).toISOString();
   };
 
   const loadEvents = async () => {
@@ -38,38 +32,88 @@ export default function AddEvent() {
     loadEvents();
   }, []);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  const validateForm = () => {
+    if (!title || !description || !location || !date || !startTime || !endTime) {
+      return "All fields are required.";
+    }
 
-    const startMinute = timeToMinutes(startTime);
-    const endMinute = timeToMinutes(endTime);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date + "T00:00:00");
+
+    if (selectedDate < today) {
+      return "Date cannot be in the past.";
+    }
+
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    if (end <= start) {
+      return "End time must be after start time.";
+    }
+
+   for (const ev of events) {
+  const evDate = new Date(ev.date).toISOString().slice(0, 10);
+
+  if (evDate === date) {
+    const evStart = new Date(ev.startTime);
+    const evEnd = new Date(ev.endTime);
+
+    // Overlap happens if the start is before existing end AND end is after existing start
+    const isOverlap = start < evEnd && end > evStart;
+
+    if (isOverlap) {
+      return `Another event "${ev.title}" already exists from ${formatTime(
+        ev.startTime
+      )} to ${formatTime(ev.endTime)}.`;
+    }
+  }
+}
+
+
+    return "";
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors("");
+
+    const validationMsg = validateForm();
+    if (validationMsg) {
+      setErrors(validationMsg);
+      return;
+    }
+
+    const startISO = combineDateTime(date, startTime);
+    const endISO = combineDateTime(date, endTime);
 
     try {
       await api.post("/events", {
         title,
         description,
+        location,
         date,
-        startMinute,
-        endMinute,
+        startTime: startISO,
+        endTime: endISO,
       });
 
       alert("Event added successfully!");
-      loadEvents();
 
       setTitle("");
       setDescription("");
+      setLocation("");
       setDate("");
       setStartTime("");
       setEndTime("");
+      loadEvents();
     } catch (err: any) {
-      console.log("EVENT ADD ERROR:", err.response?.data);
-      alert("Failed to add event");
+      console.error("EVENT ADD ERROR:", err.response?.data || err);
+      alert(err.response?.data?.message || "Failed to add event");
     }
   };
 
   const deleteEvent = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-
+    if (!window.confirm("Are you sure?")) return;
     try {
       await api.delete(`/events/${id}`);
       loadEvents();
@@ -78,89 +122,76 @@ export default function AddEvent() {
     }
   };
 
+  const formatTime = (iso?: string) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
   return (
-    <div style={{ padding: 20 }}>
+    <div className="add-event-container">
       <h2>Add Event (Admin Only)</h2>
 
+      {errors && <div className="error-box">{errors}</div>}
+
       {user?.role === "ADMIN" ? (
-        <>
-          <form onSubmit={handleSubmit}>
-            <input
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            /><br /><br />
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Title</label>
+            <input className="form-input" value={title} onChange={e => setTitle(e.target.value)} />
+          </div>
 
-            <textarea
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            /><br /><br />
+          <div className="form-group">
+            <label>Description</label>
+            <textarea className="form-textarea" value={description} onChange={e => setDescription(e.target.value)} />
+          </div>
 
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            /><br /><br />
+          <div className="form-group">
+            <label>Location</label>
+            <input className="form-input" value={location} onChange={e => setLocation(e.target.value)} />
+          </div>
 
-            <label>Start Time</label><br />
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            /><br /><br />
+          <div className="form-group">
+            <label>Date</label>
+            <input type="date" className="form-date" min={new Date().toISOString().slice(0, 10)} value={date} onChange={e => setDate(e.target.value)} />
+          </div>
 
-            <label>End Time</label><br />
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-            /><br /><br />
+          <div className="form-group">
+            <label>Start Time</label>
+            <input type="time" className="form-time" value={startTime} onChange={e => setStartTime(e.target.value)} />
+          </div>
 
-            <button type="submit">Add Event</button>
-          </form>
-        </>
+          <div className="form-group">
+            <label>End Time</label>
+            <input type="time" className="form-time" value={endTime} onChange={e => setEndTime(e.target.value)} />
+          </div>
+
+          <button className="add-btn" type="submit">Add Event</button>
+        </form>
       ) : (
         <p style={{ color: "red" }}>Only admin can create events</p>
       )}
 
       <h3 style={{ marginTop: 40 }}>All Events</h3>
 
-      <ul>
-        {events.map((event: any) => (
-          <li key={event.id}>
-            <strong>{event.title}</strong> — {new Date(event.date).toDateString()}
-            <br />
+      {events.map(ev => (
+        <div key={ev.id} className="event-card">
+          <h3>{ev.title}</h3>
+          <p><strong>Location:</strong> {ev.location || "—"}</p>
+          <p><strong>Date:</strong> {new Date(ev.date).toLocaleDateString()}</p>
+          <p><strong>Time:</strong> {formatTime(ev.startTime)} → {formatTime(ev.endTime)}</p>
+          <p>{ev.description}</p>
 
-            <div>
-              <em>{event.description}</em>
-            </div>
-
-            <div>
-               {minutesToTime(event.startMinute)} → {minutesToTime(event.endMinute)}
-            </div>
-
-            {user?.role === "ADMIN" && (
+          <div className="event-actions">
+            {user?.role === "ADMIN" && ev.createdBy === user.id && (
               <>
-                <button
-                  onClick={() => (window.location.href = `/edit-event/${event.id}`)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  style={{ marginLeft: 10 }}
-                  onClick={() => deleteEvent(event.id)}
-                >
-                  Delete
-                </button>
+                <button className="btn-edit" onClick={() => window.location.href = `/edit-event/${ev.id}`}>Edit</button>
+                <button className="btn-delete" onClick={() => deleteEvent(ev.id)}>Delete</button>
               </>
             )}
-
-            <hr />
-          </li>
-        ))}
-      </ul>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
