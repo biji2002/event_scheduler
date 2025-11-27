@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://event-scheduler-backend-2.onrender.com",
+  baseURL: process.env.REACT_APP_API_URL,   // <-- IMPORTANT
 });
 
 api.interceptors.request.use((config) => {
